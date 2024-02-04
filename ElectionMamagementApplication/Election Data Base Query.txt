@@ -1,0 +1,122 @@
+1)CREATE TABLE [dbo].[Elections] (
+    [ElectionId]     INT           IDENTITY (1, 1) NOT NULL,
+    [ElectionName]   VARCHAR (150) NOT NULL,
+    [Description]    VARCHAR (200) NOT NULL,
+    [StartDateTime]  DATETIME      NOT NULL,
+    [EndDateTime]    DATETIME      NOT NULL,
+    [ElectionStatus] VARCHAR (150) NOT NULL,
+    PRIMARY KEY CLUSTERED ([ElectionId] ASC)
+);
+
+2)CREATE TABLE [dbo].[Constituencies] (
+    [ConstituencyId]   INT           IDENTITY (1, 1) NOT NULL,
+    [ConstituencyName] VARCHAR (150) NOT NULL,
+    PRIMARY KEY CLUSTERED ([ConstituencyId] ASC)
+);
+
+
+3)CREATE TABLE [dbo].[Parties] (
+    [PartyId]         INT           IDENTITY (1, 1) NOT NULL,
+    [PartyName]       VARCHAR (200) NOT NULL,
+    [LeaderName]      VARCHAR (150) NOT NULL,
+    [FoundedYear]     DATE          NOT NULL,
+    [PartyDscription] VARCHAR (200) NULL,
+    [Password]        VARCHAR (150) NOT NULL,
+    [Email]           VARCHAR (250) NOT NULL,
+    PRIMARY KEY CLUSTERED ([PartyId] ASC)
+);
+
+
+
+
+4) candidate table :
+
+CREATE TABLE [dbo].[Candidates] (
+    [Id]             INT           IDENTITY (1, 1) NOT NULL,
+    [FirstName]      VARCHAR (50)  NOT NULL,
+    [LastName]       VARCHAR (50)  NOT NULL,
+    [Gender]         CHAR (10)     NOT NULL,
+    [PhoneNo]        VARCHAR (50)  NOT NULL,
+    [Email]          VARCHAR (250) NOT NULL,
+    [Password]       VARCHAR (100) NOT NULL,
+    [Address]        VARCHAR (250) NOT NULL,
+    [ConstituencyId] INT           NOT NULL,
+    [DateOfBirth]    DATE          NOT NULL,
+    [PartyId]        INT           NULL,
+    PRIMARY KEY CLUSTERED ([Id] ASC),
+    CONSTRAINT [FK_Candidates_Parties] FOREIGN KEY ([PartyId]) REFERENCES [dbo].[Parties] ([PartyId]),
+    CONSTRAINT [FK_Candidates_Constituencies] FOREIGN KEY ([ConstituencyId]) REFERENCES [dbo].[Constituencies] ([ConstituencyId])
+);
+
+
+5) voter table :
+
+CREATE TABLE [dbo].[Voters] (
+    [Id]           INT           IDENTITY (1, 1) NOT NULL,
+    [FirstName]    VARCHAR (50)  NOT NULL,
+    [LastName]     VARCHAR (50)  NOT NULL,
+    [Gender]       CHAR (10)     NOT NULL,
+    [PhoneNo]      VARCHAR (50)  NOT NULL,
+    [Email]        VARCHAR (250) NOT NULL,
+    [Password]     VARCHAR (100) NOT NULL,
+    [Address]      VARCHAR (250) NOT NULL,
+    [ConstituencyId] INT NOT NULL,
+    [DateOfBirth]  DATE          NOT NULL,
+    [IsVoted]      BIT       NOT NULL DEFAULT 0,
+    [AadharNo]     BIGINT        NOT NULL,
+    PRIMARY KEY CLUSTERED ([Id] ASC), 
+    CONSTRAINT [FK_Voters_Constituencies] FOREIGN KEY ([ConstituencyId]) REFERENCES [Constituencies]([ConstituencyId])
+);
+
+6)CREATE TABLE [dbo].[ElectionsResults] (
+    [ResultId]        INT            NOT NULL,
+    [ElectionId]      INT            NOT NULL,
+    [CandidateId]     INT            NOT NULL,
+    [TotalVotes]      BIGINT         DEFAULT ((0)) NOT NULL,
+    [PercentageVotes] DECIMAL (3, 2) DEFAULT ((0.00)) NOT NULL,
+    [ConstituencyId] INT NOT NULL, 
+    PRIMARY KEY CLUSTERED ([ResultId] ASC),
+    CONSTRAINT [FK_ElectionsResults_Candidates] FOREIGN KEY ([CandidateId]) REFERENCES [dbo].[Candidates] ([Id]),
+    CONSTRAINT [FK_ElectionsResults_Elections] FOREIGN KEY ([ElectionId]) REFERENCES [dbo].[Elections] ([ElectionId]), 
+    CONSTRAINT [FK_ElectionsResults_Constituencies] FOREIGN KEY ([ConstituencyId]) REFERENCES [Constituencies]([ConstituencyId])
+);
+
+7)CREATE TABLE [dbo].[Votes] (
+    [VoteId]        INT      NOT NULL,
+    [VoterId]       INT      NOT NULL,
+    [CandidateId]   INT      NOT NULL,
+    [ElectionId]    INT      NOT NULL,
+    [VoteTimeStamp] DATETIME NOT NULL,
+    PRIMARY KEY CLUSTERED ([VoteId] ASC),
+    CONSTRAINT [FK_Votes_Elections] FOREIGN KEY ([ElectionId]) REFERENCES [dbo].[Elections] ([ElectionId]),
+    CONSTRAINT [FK_Votes_Voters] FOREIGN KEY ([VoterId]) REFERENCES [dbo].[Voters] ([Id]),
+    CONSTRAINT [FK_Votes_Candidates] FOREIGN KEY ([CandidateId]) REFERENCES [dbo].[Candidates] ([Id])
+);
+
+3) EntityFrameWork :-DBforest
+Db first approach
+
+1. Add Nuget Packages 
+Microsoft.EntityFrameworkCore
+Microsoft.EntityFrameworkCore.SqlServer
+Microsoft.EntityFrameworkCore.Tools
+
+2. Package Manager Console
+ Scaffold-DbContext "Data Source=(localdb)\MsSqlLocalDb;Initial Catalog=ElectionManagementDataBase;Integrated Security=true" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Models
+
+
+
+3. Add EF service in Program.cs
+
+        public static void Main(string[] args)
+        {
+            builder.Services.AddControllersWithViews();
+            builder.Services.AddDbContext<ElectionManagementDataBaseContext>(options =>
+                        options.UseSqlServer(builder.Configuration.GetConnectionString("ElectionManagementDataBaseContext")));
+
+        }
+
+4. Specify connection string in appsettings.json
+"ConnectionStrings": {
+    "ElectionManagementDataBaseContext": "Data Source=(localdb)\\MsSqlLocalDb;Initial Catalog=ElectionManagementDataBase;Integrated Security=true;MultipleActiveResultSets=true"
+  }
