@@ -1,4 +1,4 @@
-C-DAC Minor Project ->
+C-DAC Major Project ->
 This project utilizes ASP.NET MVC for creating front end and ASP.NET Web API for back end. It is enabling
 seamless data transfer between the MVC and API components in both directions. 
 The project serves Admin, Election Officers, Parties, Candidates, and Voters with tailored functionalities. Election Officers can manage constituencies, elections, and analyze results by constituency, parties, and
